@@ -91,7 +91,9 @@ if __name__ == '__main__':
             kbd_watchdog_loop()
 
         elif argv[1] == 'stop':
-            # arakiri
+            # Stops the synth
+            Popen( f'{UHOME}/synth_lite/synth_lite.py stop'.split() )
+            # And do arakiri
             Popen( f'pkill -f synth_lite_launcher'.split() )
 
         else:
@@ -99,3 +101,5 @@ if __name__ == '__main__':
 
     else:
         print(__doc__)
+
+
