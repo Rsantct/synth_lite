@@ -77,7 +77,7 @@ def kbd_watchdog_loop():
                 Popen( f'{UHOME}/synth_lite/synth_lite.py stop'.split() )
                 sleep(5) # avoid bouncing
 
-        sleep(2)
+        sleep(3)
 
 if __name__ == '__main__':
 
