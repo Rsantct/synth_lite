@@ -99,36 +99,12 @@ def prints_some_fluid_settings():
     print( f'Chorus:  {chorus}')
     print()
 
-def pulse_release_all_cards():
-    ''' asks Pulseaudio to release all sound cards
-    '''
-    tarjetas = []
-
-    # leemos la lista de tarjetas de pulseadio
-    printado = check_output( "pactl list short cards".split() ).decode()
-    for linea in printado.split("\n"):
-        if linea: # eludimos tratar lineas vacias (la última línea del printado está vacía)
-            # el printado de tarjetas viene tabulado en tres campos:
-            #      numTarjeta   nombreTarjeta    moduloAlsa
-            # guardamos la tarjeta con sus tres campos
-            tarjetas.append(Tarjeta_pa(linea.split()[0], linea.split()[1], linea.split()[2]))
-
-    for tarjeta in tarjetas:
-        comando = "pactl set-card-profile " + tarjeta.nombre + " off"
-        tmp = check_output( comando.split() ).decode()
-        if tmp: # algo ha ido mal
-            print( "(pulse_manager):" )
-            print( tmp )
-        else:   # comando aceptado
-            print( "(pulse_manager) se desactiva la tarjeta en PA: " + tarjeta.nombre )
+def pulse_release_card(card):
+    pass
 
 def start_synth():
-    # Lanzamos el SINTE
     # -i no interactive, - s tcp server on port 9800
-    # 0 < gain < 5, por defecto 0.2. Experimentalmente vi que 4.4 es lo máximo para no saturar
-    # con un piano, pero incluso conviene bajarla más para intrumemtos muy armónicos.
-    # audio-bufsize:64...8192 (def=64), influye en el %CPU,
-    # en la RPI es usable hasta 128 para un piano, un organo puede admitir quizas 256 o 512
+    # 0 < gain < 5, default 0.2. Beware if set >1.0 and you use high armonic instruments.
     if "fluid" in CFG.engine:
         tmp =  "fluidsynth -i -s"
     else:
@@ -143,7 +119,7 @@ def start_synth():
 
     if CFG.driver == "alsa":
         try:
-            pulse_release_all_cards()
+            pulse_release_card(CFG.alsaDevice)
         except:
             pass
         tmp += " -a alsa -o audio.alsa.device=" + CFG.alsaDevice
