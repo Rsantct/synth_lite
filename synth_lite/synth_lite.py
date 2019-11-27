@@ -21,7 +21,7 @@ def releaseSC(pcms=["*"]):
     """
     for pcm in pcms:
         # fuser: -v shows the process name, -k kills the process
-        tmp = check_output("fuser -v -k /dev/snd/" + pcm + "; exit 0", 
+        tmp = check_output("fuser -v -k /dev/snd/" + pcm + "; exit 0",
                            stderr=STDOUT, shell=True).decode()
         tmp = tmp.split("\n")
         # reading killed processes
@@ -36,6 +36,48 @@ def releaseSC(pcms=["*"]):
         else:
             print( "(synth) release_sound_card /dev/snd/" + pcm + " not used." )
 
+def PA_release_card( alsa_card ):
+    """ Release the card from Pulseaudio """
+
+    def get_pulse_cards():
+        pa_cards = {}
+        try:
+            tmp = sp.check_output( 'pactl list cards'.split() ).decode().split('\n')
+            new_card = False
+            for line in tmp:
+
+                if line.startswith("Card #"):
+                    new_card = True
+                    cardN = line.strip()
+                    pa_cards[ cardN ] = {}
+
+                if new_card and 'Name: ' in line:
+                    pa_cards[cardN]['pa_name'] = line.split(':')[-1].strip()
+
+                if new_card and 'alsa.card_name' in line:
+                    pa_cards[cardN]['alsa_name'] = line.split('=')[-1].strip() \
+                                                    .replace('"','')
+
+        except:
+            pass
+
+        return pa_cards
+
+    # The set of cards managed under PA
+    pa_cards = get_pulse_cards()
+
+    if not pa_cards:
+        return
+
+    # Release out card from PA
+    for pa_card in pa_cards:
+        #print (mycard, pa_cards[pa_card]["alsa_name"],
+        #       pa_cards[pa_card]["pa_name"])
+        if pa_cards[pa_card]["alsa_name"] in alsa_card:
+            pa_name = pa_cards[pa_card]["pa_name"]
+            sp.Popen( f'pactl set-card-profile {pa_name} off'.split() )
+            print( f'releasing {pa_name} from Pulseaudio' )
+
 def is_jack_running():
     try:
         print( f'(synth) checking JACKD')
@@ -49,7 +91,7 @@ def start_jackd():
     print( f'(synth) starting JACKD')
 
     jack_cmd = f'jackd -R -dalsa -dhw:{CFG.alsaCard} -r{str(CFG.rate)}'
-    
+
     if 'pulseaudio' in check_output("pgrep -fl pulseaudio", shell=True).decode():
         jack_cmd = ['pasuspender', '--'] + jack_cmd
 
@@ -69,7 +111,6 @@ def start_jackd():
             c -= 1
             sleep(.5)
     return False
-
 
 def stop_synth():
     with open('/dev/null', 'w') as fNull:
@@ -99,9 +140,6 @@ def prints_some_fluid_settings():
     print( f'Chorus:  {chorus}')
     print()
 
-def pulse_release_card(card):
-    pass
-
 def start_synth():
     # -i no interactive, - s tcp server on port 9800
     # 0 < gain < 5, default 0.2. Beware if set >1.0 and you use high armonic instruments.
@@ -119,7 +157,7 @@ def start_synth():
 
     if CFG.driver == "alsa":
         try:
-            pulse_release_card(CFG.alsaDevice)
+            PA_release_card(CFG.alsaDevice)
         except:
             pass
         tmp += " -a alsa -o audio.alsa.device=" + CFG.alsaDevice
@@ -161,13 +199,13 @@ def start_synth():
 
 
 if __name__ == "__main__":
-    
+
     shutdown = False
     if sys.argv[1:]:
         for opc in sys.argv[1:]:
             if 'kill' in opc or 'shutdown' in opc or 'stop' in opc:
                 shutdown = True
-    
+
     # Read config
     thisDir  = dirname( realpath(__file__) )
     cfg_file = basename( realpath(__file__) ).replace('.py','.cfg')
@@ -178,7 +216,7 @@ if __name__ == "__main__":
     CFG["chorus"] = {False:'no', True:'yes'}[CFG["chorus"]]
 
     CFG = Dict2obj(CFG)
-    
+
     # Stopping if any synth running
     print( '(synth) killing synths' )
     stop_synth()
