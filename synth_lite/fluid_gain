@@ -1,0 +1,16 @@
+#!/bin/bash
+
+if test "$1" = ""
+then
+    echo
+    echo     "usage: fluid_gain X   [0 < X < 5]"
+    echo
+    echo     "(i) runtime gain changes cannot be seen by querying 'settings' :-/"
+    echo
+    exit 0
+fi
+
+echo gain $1 | nc -N localhost 9800
+
+
+

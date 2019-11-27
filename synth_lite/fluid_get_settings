@@ -1,0 +1,19 @@
+#!/bin/bash
+
+
+
+echo settings | nc -N localhost 9800
+echo
+
+echo '(!) NOTICE:'
+echo 'These are start up values, REALTIME value changes are NOT displayed.'
+echo
+
+#
+#    synth.device-id INT [min=0, max=126, def=0] REALTIME"
+#       Device ID to use for accepting incoming SYSEX messages."
+#    synth.gain FLOAT [min=0.000, max=10.000, def=0.200] REALTIME"
+#       Master synthesizer gain."
+#    synth.polyphony INT [min=1, max=65535, def=256] REALTIME"
+#       Voice polyphony count (number of simultaneous voices allowed)."
+

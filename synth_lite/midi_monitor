@@ -1,0 +1,42 @@
+#!/bin/bash
+
+echo "stopping 'amidi' monitor ..."
+killall amidi > /dev/null 2>&1
+
+if test "$1" = "off"
+then
+    echo "Bye!"
+    exit 0
+fi
+
+if test "$1" = "stop"
+then
+    echo "Bye!"
+    exit 0
+fi
+
+
+# creates a virtual RawMIDI port and prints all data sent to this port.
+# Do grep by selecting only lines starting with 9X, 
+# wich indicates the MIDI channel
+# The 2nd hex digit is the channel.
+echo
+echo "The MIDI channel wich arrives from the keyboard is"
+echo "the indicated after the 9X .. .."
+echo "(it is displayed only once or when a channel change occurs)"
+echo
+
+#amidi -p virtual -d | grep ^9 &
+amidi -p virtual -d &
+
+# Lets see how it is displayed when querying > aconnect -o
+# client 129: 'Client-129' [type=user]
+#    0 'Virtual RawMIDI '
+
+# Connecting the keyboard to RawMIDI port in order to monitor it.
+port_i=$(aconnect -i | grep Keystation  | grep client | cut -d" " -f2 | cut -d":" -f1)
+port_o=$(aconnect -o | grep "Client-"   | grep client | cut -d" " -f2 | cut -d":" -f1)
+aconnect $port_i $port_o
+
+
+

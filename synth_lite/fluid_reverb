@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# (!) It is mandatory than fluidsynth has been launched with -s (server)
+
+
+# (i) reverb is a REALTIME setting: it can be runtime changed,
+#     but runtime changes are not updated when querying 'settings'
+
+
+if test "$1" = ""
+then
+    echo "usage: fluid_reverb [on|off]"
+    exit 0
+else
+    if test "$1" = on
+    then
+        echo "reverb on" | nc -N localhost 9800
+        echo reberv: ON
+    else
+        echo "reverb off" | nc -N localhost 9800
+        echo reberv: OFF
+    fi
+fi
+

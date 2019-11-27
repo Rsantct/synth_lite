@@ -1,0 +1,6 @@
+#!/bin/bash
+
+echo channels | nc -N localhost 9800
+
+
+
