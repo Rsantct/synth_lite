@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-    A daemon that auto start or stop 'synth_lite.py'
-    when your midi keyboard is available or not.
+    A daemon that auto starts or stops 'synth_lite.py'
+    whenever your midi keyboard is available.
 
     usage:  synth_lite_launcher.py  start | stop  &
 
