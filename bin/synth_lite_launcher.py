@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-    A daemon that auto starts or stops 'synth_lite.py'
-    whenever your midi keyboard is available.
+    A daemon that auto start or stop 'synth_lite.py'
+    when your midi keyboard is available or not.
 
     usage:  synth_lite_launcher.py  start | stop  &
 
@@ -13,6 +13,12 @@ from time import sleep
 from os.path import expanduser
 
 UHOME = expanduser("~")
+
+#############################################################
+# Assign '' to not use
+amplifier_switch_on_script = ''#f'{UHOME}/bin/ampli.sh on'
+#############################################################
+
 
 def kill_bill():
     """ killing any previous instance of this, becasue
@@ -69,6 +75,8 @@ def kbd_watchdog_loop():
             print(f'(synth_lite_launcher) kbd is {state}')
 
             if kbd:
+                # Switch on your audio amplifier
+                Popen( amplifier_switch_on_script.split() )
                 # Starts the synth
                 Popen( f'{UHOME}/synth_lite/synth_lite.py start'.split() )
                 sleep(5) # avoid bouncing
@@ -77,7 +85,7 @@ def kbd_watchdog_loop():
                 Popen( f'{UHOME}/synth_lite/synth_lite.py stop'.split() )
                 sleep(5) # avoid bouncing
 
-        sleep(3)
+        sleep(2)
 
 if __name__ == '__main__':
 
