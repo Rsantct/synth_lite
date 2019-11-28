@@ -118,16 +118,20 @@ def stop_synth():
         Popen( 'killall -KILL  fluidsynth'.split(), stderr=fNull, stdout=fNull )
     sleep(.5)
 
-def get_alsa_seq(cosa):
-    # Como de momento no parece necerario diferenciar entre puertos de entrada '-i' o de salida '-o'
-    # entonces listamos todos '-l'
-    tmp = check_output('aconnect -l | grep -i ' + cosa + ' | grep client | cut -d" " -f2 | cut -d":" -f1', shell=True)
-    return tmp.decode()[:-1]
+def get_alsa_seq_client(pattern, mode='input'):
+    mode = {'input':'-i', 'in':'-i', 'i':'-i',
+            'output':'-o', 'out':'-o', 'o':'-o'}[mode]
+    tmp = check_output( f'aconnect {mode}'.split() ).decode()
+    # example:
+    # client 128: 'FLUID Synth (11469)' [type=user,pid=11469]
+    for line in [x for x in tmp.split('\n') if x[:6]=='client']:
+        if pattern.lower() in line.lower():
+            return line.split(':')[0].split()[-1]
 
 def connect_kb_synth():
-    # hacemos las conexiones MIDI en ALSA desde el TECLADO hacia el SINTE:
     print( '(synth) Connecting ALSA SEQ PORTS: keyboard <--> synth' )
-    tmp = f'aconnect {get_alsa_seq("key")} {get_alsa_seq("synth")}'
+    tmp = f'aconnect {get_alsa_seq_client("key", "input")}' \
+          + f' {get_alsa_seq_client("synth", "output")}'
     Popen( tmp.split() )
 
 def prints_some_fluid_settings():
@@ -186,7 +190,7 @@ def start_synth():
     n = 10
     print( '(synth) waiting for fluidsynth under alsa sequencer ports ...' )
     while n:
-        if get_alsa_seq("synth"):
+        if get_alsa_seq_client("synth", mode='output'):
             print( f'(synth) the synth {CFG.engine} has started' )
             return True
         sleep(1)
