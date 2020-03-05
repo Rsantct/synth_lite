@@ -24,7 +24,7 @@ def read_presets():
     thisDir =   dirname( realpath(__file__) )
     cfg_file= basename( realpath(__file__) ).replace('.py','.cfg')
     with open(f'{thisDir}/{cfg_file}', 'r') as f:
-        presets = yaml.load(f)
+        presets = yaml.safe_load(f)
     for p in presets.keys():
         tmp = presets[p]
         tmp = [x.strip().replace('"','').replace("'","") for x in tmp.split(',')]
