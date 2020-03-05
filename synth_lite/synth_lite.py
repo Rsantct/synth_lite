@@ -214,7 +214,7 @@ if __name__ == "__main__":
     thisDir  = dirname( realpath(__file__) )
     cfg_file = basename( realpath(__file__) ).replace('.py','.cfg')
     with open(f'{thisDir}/{cfg_file}', 'r') as f:
-        CFG = yaml.load(f)
+        CFG = yaml.safe_load(f)
 
     CFG["reverb"] = {False:'no', True:'yes'}[CFG["reverb"]]
     CFG["chorus"] = {False:'no', True:'yes'}[CFG["chorus"]]
